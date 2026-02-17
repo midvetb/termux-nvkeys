@@ -1,0 +1,1 @@
+[['ESC',{'macro':'ESC :w ENTER','display':':w'},{'macro':'ESC :q ENTER','display':':q'},{'macro':'ESC :wq ENTER','display':':wq'},{'macro':'ESC :Ex ENTER','display':':Ex'},{'macro':'ESC :term ENTER','display':':term'},{'macro':'ESC /','display':'/'}],['TAB','CTRL','ALT','HOME','END','UP','$'],['""','()','[]','{}','LEFT','DOWN','RIGHT']]
