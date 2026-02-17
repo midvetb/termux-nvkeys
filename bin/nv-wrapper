@@ -190,6 +190,8 @@ main() {
     else
         die "nvim not found"
     fi
+
+    cleanup
 }
 
 main "$@"
