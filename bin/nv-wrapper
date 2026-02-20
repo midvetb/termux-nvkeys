@@ -17,6 +17,9 @@ BEGIN_NVIM="# nv:begin-nvim-extra-keys"
 END_NVIM="# nv:end-nvim-extra-keys"
 ORIG_PREFIX="# nv:orig "
 
+_cleaned=0
+apply_pid=
+
 die() {
     printf "nv: %s\n" "$*" >&2
     exit 1
@@ -89,7 +92,7 @@ apply_nvim_keys() {
         {
             print
         }
-    ' "$TP" > "$tmp"
+    ' "$TP" > "$tmp" || die "awk failed while applying nvim keys"
 
     {
         echo
@@ -99,7 +102,7 @@ apply_nvim_keys() {
     } >> "$tmp"
 
     cp -f "$tmp" "$TP"
-    rm -f "$tmp"
+    rm -rf "$tmp"
 
     termux_reload
 }
@@ -139,6 +142,8 @@ restore_extra_keys() {
 
         in_uncomment == 1 {
             if ($0 !~ /^[[:space:]]*#/) {
+                # Non-comment line found inside a comment block —
+                # likely a manual user edit; print as-is and stop uncommenting
                 in_uncomment = 0
                 print
                 next
@@ -156,12 +161,23 @@ restore_extra_keys() {
         {
             print
         }
-    ' "$TP" > "$tmp"
+    ' "$TP" > "$tmp" || { printf "nv: awk failed during restore, properties unchanged\n" >&2; return 1; }
 
     cp -f "$tmp" "$TP"
-    rm -f "$tmp"
+    rm -rf "$tmp"
 
     termux_reload
+}
+
+cleanup() {
+    [[ $_cleaned -eq 1 ]] && return
+    _cleaned=1
+
+    if [[ -n "$apply_pid" ]] && kill -0 "$apply_pid" 2>/dev/null; then
+        wait "$apply_pid" 2>/dev/null || true
+    fi
+
+    restore_extra_keys || true
 }
 
 main() {
@@ -170,28 +186,13 @@ main() {
     apply_nvim_keys &
     apply_pid=$!
 
-    cleanup() {
-        if kill -0 "$apply_pid" 2>/dev/null; then
-            wait "$apply_pid" 2>/dev/null || true
-        fi
-
-        restore_extra_keys
-    }
-
-    # (CRASH) EXIT SIGINT=2 SIGTERM=15 > cleanup()
     trap cleanup EXIT INT TERM
 
     if have nvim; then
         nvim "$@"
-        # <--dbg--->
-        # tail -n 20 ~/.termux/termux.properties > test.txt
-        # sleep 1
-        # <--dbg-->
     else
         die "nvim not found"
     fi
-
-    cleanup
 }
 
 main "$@"
