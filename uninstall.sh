@@ -73,9 +73,7 @@ main() {
 
     printf "uninstall: removed ~/.local/bin/nv-wrapper and ~/.local/share/%s\n" "$APP_NAME"
 
-    printf "\n(!): Restarting shell...\n"
-    sleep 1
-    exec "$SHELL"
+    printf "\n(!): Restart your session or type \"exec \$SHELL\"\n"
 }
 
 main "$@"

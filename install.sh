@@ -166,9 +166,7 @@ main() {
     install_shell_wrapper
     postinstall
 
-    printf "\n(!): Restarting shell...\n"
-    sleep 1
-    exec "$SHELL"
+    printf "\n(!): Restart your session, or type \"exec \$SHELL\"\n"
 }
 
 main "$@"
